@@ -400,10 +400,10 @@
                 <label for="type"><i class="fas fa-tag"></i> Tipo de Bin:</label>
                 <select id="type">
                     <option value="">Todos los tipos</option>
-                    <option value="small">Pequeño (100L)</option>
-                    <option value="medium">Mediano (200L)</option>
-                    <option value="large">Grande (500L)</option>
-                    <option value="xlarge">Extra Grande (1000L)</option>
+                    <option value="small">20 pies (20' DV) ~ 30.5 toneladas</option>
+                    <option value="medium">40 pies (40' DV) 30.5 toneladas</option>
+                    <option value="large">40 pies High Cube (40' HC) ~ 30.5 toneladas</option>
+                    <option value="xlarge">40 pies High Cube Reefer ~ 32.5 toneladas</option>
                 </select>
             </div>
             
@@ -539,10 +539,10 @@
         // Función para formatear el tipo
         function formatType(type) {
             const types = {
-                "small": "Pequeño (100L)",
-                "medium": "Mediano (200L)",
-                "large": "Grande (500L)",
-                "xlarge": "Extra Grande (1000L)"
+                "small": "20 pies (20' DV) ~ 30.5 toneladas",
+                "medium": "40 pies (40' DV) 30.5 toneladas",
+                "large": "40 pies High Cube (40' HC) ~ 30.5 toneladas",
+                "xlarge": "40 pies High Cube Reefer ~ 32.5 toneladas"
             };
             return types[type] || type;
         }
