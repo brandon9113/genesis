@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bin Capacity Report</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .bin-container {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .bin-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, #3498db, #2ecc71, #e74c3c, #f39c12);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        .stat-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+        
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+        
+        .filters {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 12px;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .filter-group label {
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .filter-group select, .filter-group input {
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.9);
+            color: #2c3e50;
+            font-weight: 500;
+        }
+        
+        .buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 15px;
+        }
+        
+        button {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #c0392b;
+            transform: translateY(-2px);
+        }
+        
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #3498db;
+            color: #3498db;
+        }
+        
+        .btn-outline:hover {
+            background: #3498db;
+            color: white;
+        }
+        
+        .report {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            overflow: hidden;
+            margin-top: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 16px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        th {
+            background: rgba(0, 0, 0, 0.2);
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+        
+        tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .capacity-visual {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .bin-icon {
+            font-size: 1.8rem;
+            width: 40px;
+            text-align: center;
+        }
+        
+        .capacity-bar {
+            flex-grow: 1;
+            background: rgba(255, 255, 255, 0.2);
+            height: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .capacity-fill {
+            height: 100%;
+            border-radius: 10px;
+            text-align: center;
+            color: white;
+            font-size: 12px;
+            line-height: 20px;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+        
+        .low {
+            background: linear-gradient(90deg, #2ecc71, #27ae60);
+        }
+        
+        .medium {
+            background: linear-gradient(90deg, #f39c12, #e67e22);
+        }
+        
+        .high {
+            background: linear-gradient(90deg, #e74c3c, #c0392b);
+        }
+        
+        .full {
+            background: linear-gradient(90deg, #8e44ad, #6c3483);
+        }
+        
+        .status {
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            text-align: center;
+            display: inline-block;
+        }
+        
+        .status-empty {
+            background: rgba(241, 196, 15, 0.2);
+            color: #f1c40f;
+            border: 1px solid #f1c40f;
+        }
+        
+        .status-ok {
+            background: rgba(46, 204, 113, 0.2);
+            color: #2ecc71;
+            border: 1px solid #2ecc71;
+        }
+        
+        .status-warning {
+            background: rgba(243, 156, 18, 0.2);
+            color: #f39c12;
+            border: 1px solid #f39c12;
+        }
+        
+        .status-critical {
+            background: rgba(231, 76, 60, 0.2);
+            color: #e74c3c;
+            border: 1px solid #e74c3c;
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+            gap: 10px;
+        }
+        
+        .pagination button {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            min-width: 40px;
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .pagination button.active {
+            background: #3498db;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+        
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .filters {
+                grid-template-columns: 1fr;
+            }
+            
+            .buttons {
+                flex-direction: column;
+            }
+            
+            th, td {
+                padding: 12px 8px;
+            }
+            
+            .hide-mobile {
+                display: none;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 1.8rem;
+            }
+        }
+        
+        /* Animaciones */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+<body>
+    <div class="bin-container">
+        <div class="header">
+            <h1><i class="fas fa-boxes-stacked"></i> REPORTE DE BIN CAPACITY</h1>
+            <p class="subtitle">Sistema de Monitoreo de Contenedores y Capacidad de Almacenamiento</p>
+        </div>
+        
+        <div class="dashboard">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-box"></i></div>
+                <div class="stat-value">142</div>
+                <div class="stat-label">Bins Monitoreados</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-chart-pie"></i></div>
+                <div class="stat-value">63%</div>
+                <div class="stat-label">Capacidad Promedio</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                <div class="stat-value">18</div>
+                <div class="stat-label">Bins Críticos (>90%)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-inbox"></i></div>
+                <div class="stat-value">24</div>
+                <div class="stat-label">Bins Vacíos</div>
+            </div>
+        </div>
+        
+        <div class="filters">
+            <div class="filter-group">
+                <label for="location"><i class="fas fa-map-marker-alt"></i> Ubicación:</label>
+                <select id="location">
+                    <option value="">Todas las ubicaciones</option>
+                    <option value="norte">Almacén Norte</option>
+                    <option value="sur">Almacén Sur</option>
+                    <option value="este">Almacén Este</option>
+                    <option value="oeste">Almacén Oeste</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="type"><i class="fas fa-tag"></i> Tipo de Bin:</label>
+                <select id="type">
+                    <option value="">Todos los tipos</option>
+                    <option value="small">Pequeño (100L)</option>
+                    <option value="medium">Mediano (200L)</option>
+                    <option value="large">Grande (500L)</option>
+                    <option value="xlarge">Extra Grande (1000L)</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="status"><i class="fas fa-info-circle"></i> Estado:</label>
+                <select id="status">
+                    <option value="">Todos los estados</option>
+                    <option value="empty">Vacío (0%)</option>
+                    <option value="low">Baja (1-30%)</option>
+                    <option value="medium">Media (31-70%)</option>
+                    <option value="high">Alta (71-90%)</option>
+                    <option value="critical">Crítica (>90%)</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="search"><i class="fas fa-search"></i> Buscar:</label>
+                <input type="text" id="search" placeholder="ID o nombre de bin...">
+            </div>
+        </div>
+        
+        <div class="buttons">
+            <button class="btn-primary" onclick="applyFilters()">
+                <i class="fas fa-filter"></i> Aplicar Filtros
+            </button>
+            <button class="btn-outline" onclick="resetFilters()">
+                <i class="fas fa-redo"></i> Restablecer
+            </button>
+            <button class="btn-secondary" onclick="exportToCSV()">
+                <i class="fas fa-file-export"></i> Exportar a CSV
+            </button>
+        </div>
+        
+        <div class="report">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID Bin</th>
+                        <th>Nombre</th>
+                        <th class="hide-mobile">Ubicación</th>
+                        <th>Tipo</th>
+                        <th>Capacidad</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody id="report-body">
+                    <!-- Los datos se cargarán con JavaScript -->
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="pagination">
+            <button onclick="changePage('prev')"><i class="fas fa-chevron-left"></i></button>
+            <button class="active">1</button>
+            <button>2</button>
+            <button>3</button>
+            <button>4</button>
+            <button>5</button>
+            <button onclick="changePage('next')"><i class="fas fa-chevron-right"></i></button>
+        </div>
+        
+        <div class="footer">
+            <p>Reporte generado el <span id="current-date"></span> | Sistema de Gestión de Bins v2.0</p>
+        </div>
+    </div>
+
+    <script>
+        // Datos de ejemplo para simular la información de bins
+        const binData = [
+            { id: "BIN-001", name: "Materias Primas A", location: "norte", type: "large", capacity: 45 },
+            { id: "BIN-002", name: "Componentes B", location: "sur", type: "medium", capacity: 82 },
+            { id: "BIN-003", name: "Productos Terminados", location: "este", type: "xlarge", capacity: 93 },
+            { id: "BIN-004", name: "Empaques", location: "oeste", type: "small", capacity: 12 },
+            { id: "BIN-005", name: "Herramientas", location: "norte", type: "medium", capacity: 28 },
+            { id: "BIN-006", name: "Refacciones", location: "sur", type: "large", capacity: 67 },
+            { id: "BIN-007", name: "Químicos", location: "este", type: "small", capacity: 5 },
+            { id: "BIN-008", name: "Desechables", location: "oeste", type: "medium", capacity: 76 },
+            { id: "BIN-009", name: "Material Eléctrico", location: "norte", type: "large", capacity: 34 },
+            { id: "BIN-010", name: "Limpieza", location: "sur", type: "small", capacity: 91 },
+            { id: "BIN-011", name: "Seguridad", location: "este", type: "medium", capacity: 22 },
+            { id: "BIN-012", name: "Oficina", location: "oeste", type: "small", capacity: 8 },
+            { id: "BIN-013", name: "Mantenimiento", location: "norte", type: "large", capacity: 57 },
+            { id: "BIN-014", name: "Pinturas", location: "sur", type: "medium", capacity: 64 },
+            { id: "BIN-015", name: "Adhesivos", location: "este", type: "small", capacity: 39 }
+        ];
+
+        // Función para formatear la fecha actual
+        function formatDate(date) {
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            return date.toLocaleDateString('es-ES', options);
+        }
+
+        // Función para determinar la clase de capacidad según el porcentaje
+        function getCapacityClass(capacity) {
+            if (capacity === 0) return "empty";
+            if (capacity <= 30) return "low";
+            if (capacity <= 70) return "medium";
+            if (capacity <= 90) return "high";
+            return "full";
+        }
+
+        // Función para determinar el texto de estado según la capacidad
+        function getStatusText(capacity) {
+            if (capacity === 0) return { text: "Vacío", class: "status-empty" };
+            if (capacity <= 30) return { text: "Bajo", class: "status-ok" };
+            if (capacity <= 70) return { text: "Moderado", class: "status-warning" };
+            if (capacity <= 90) return { text: "Alto", class: "status-warning" };
+            return { text: "Crítico", class: "status-critical" };
+        }
+
+        // Función para obtener el icono según el tipo de bin
+        function getBinIcon(type) {
+            const icons = {
+                "small": "fas fa-box",
+                "medium": "fas fa-archive",
+                "large": "fas fa-cubes",
+                "xlarge": "fas fa-pallet"
+            };
+            return icons[type] || "fas fa-box";
+        }
+
+        // Función para formatear la ubicación
+        function formatLocation(location) {
+            const locations = {
+                "norte": "Almacén Norte",
+                "sur": "Almacén Sur",
+                "este": "Almacén Este",
+                "oeste": "Almacén Oeste"
+            };
+            return locations[location] || location;
+        }
+
+        // Función para formatear el tipo
+        function formatType(type) {
+            const types = {
+                "small": "Pequeño (100L)",
+                "medium": "Mediano (200L)",
+                "large": "Grande (500L)",
+                "xlarge": "Extra Grande (1000L)"
+            };
+            return types[type] || type;
+        }
+
+        // Función para renderizar la tabla con los datos
+        function renderTable(data) {
+            const tbody = document.getElementById('report-body');
+            tbody.innerHTML = '';
+            
+            data.forEach(bin => {
+                const capacityClass = getCapacityClass(bin.capacity);
+                const status = getStatusText(bin.capacity);
+                const binIcon = getBinIcon(bin.type);
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${bin.id}</td>
+                    <td>${bin.name}</td>
+                    <td class="hide-mobile">${formatLocation(bin.location)}</td>
+                    <td>${formatType(bin.type)}</td>
+                    <td>
+                        <div class="capacity-visual">
+                            <div class="bin-icon"><i class="${binIcon}"></i></div>
+                            <div class="capacity-bar">
+                                <div class="capacity-fill ${capacityClass}" style="width: ${bin.capacity}%">${bin.capacity}%</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td><span class="status ${status.class}">${status.text}</span></td>
+                `;
+                
+                tbody.appendChild(row);
+            });
+        }
+
+        // Función para aplicar filtros
+        function applyFilters() {
+            const locationFilter = document.getElementById('location').value;
+            const typeFilter = document.getElementById('type').value;
+            const statusFilter = document.getElementById('status').value;
+            const searchFilter = document.getElementById('search').value.toLowerCase();
+            
+            const filteredData = binData.filter(bin => {
+                // Filtro por ubicación
+                if (locationFilter && bin.location !== locationFilter) return false;
+                
+                // Filtro por tipo
+                if (typeFilter && bin.type !== typeFilter) return false;
+                
+                // Filtro por estado de capacidad
+                if (statusFilter) {
+                    if (statusFilter === "empty" && bin.capacity !== 0) return false;
+                    if (statusFilter === "low" && (bin.capacity === 0 || bin.capacity > 30)) return false;
+                    if (statusFilter === "medium" && (bin.capacity <= 30 || bin.capacity > 70)) return false;
+                    if (statusFilter === "high" && (bin.capacity <= 70 || bin.capacity > 90)) return false;
+                    if (statusFilter === "critical" && bin.capacity <= 90) return false;
+                }
+                
+                // Filtro de búsqueda
+                if (searchFilter && 
+                    !bin.id.toLowerCase().includes(searchFilter) && 
+                    !bin.name.toLowerCase().includes(searchFilter)) {
+                    return false;
+                }
+                
+                return true;
+            });
+            
+            renderTable(filteredData);
+        }
+
+        // Función para restablecer filtros
+        function resetFilters() {
+            document.getElementById('location').value = '';
+            document.getElementById('type').value = '';
+            document.getElementById('status').value = '';
+            document.getElementById('search').value = '';
+            
+            renderTable(binData);
+        }
+
+        // Función para cambiar de página (simulada)
+        function changePage(direction) {
+            alert(`Funcionalidad de ${direction} página. En una implementación real, se cargarían más datos.`);
+        }
+
+        // Función para exportar a CSV (simulada)
+        function exportToCSV() {
+            alert("Exportando datos a CSV. En una implementación real, se generaría y descargaría un archivo CSV.");
+        }
+
+        // Inicializar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            // Establecer la fecha actual
+            document.getElementById('current-date').textContent = formatDate(new Date());
+            
+            // Renderizar la tabla con todos los datos inicialmente
+            renderTable(binData);
+        });
+    </script>
+</body>
+</html>
